@@ -1,0 +1,21 @@
+{
+  "accuracy": 0.6387195121951219,
+  "precision_potable": 0.5463414634146342,
+  "recall_potable": 0.4375,
+  "f1_potable": 0.48590021691973967,
+  "precision_not_potable": 0.6807095343680709,
+  "recall_not_potable": 0.7675,
+  "f1_not_potable": 0.7215041128084606,
+  "false_positives_said_potable_but_not": 93,
+  "feature_importance": {
+    "ph": 0.1326,
+    "Hardness": 0.1228,
+    "Solids": 0.112,
+    "Chloramines": 0.1158,
+    "Sulfate": 0.1285,
+    "Conductivity": 0.1001,
+    "Organic_carbon": 0.0955,
+    "Trihalomethanes": 0.0953,
+    "Turbidity": 0.0976
+  }
+}

@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Secrets: never commit these
+.env
+!.env.example
+
+# Node
+node_modules/
+dist/
+
+# Editor / OS
+.vscode/
+.DS_Store
+
+# User-uploaded photos
+backend/uploads/
