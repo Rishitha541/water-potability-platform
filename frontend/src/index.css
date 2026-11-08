@@ -1,66 +1,64 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
 :root {
   color-scheme: light;
 }
 
-body {
-  margin: 0;
-  background: linear-gradient(135deg, #e0f7fa 0%, #e8eaf6 100%);
-  color: #1a1a2e;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  min-height: 100vh;
+* {
+  box-sizing: border-box;
 }
 
-input, button {
+body {
+  margin: 0;
+  background: #f1f5f9;
+  background-image: radial-gradient(circle at 100% 0%, #ccfbf1 0, transparent 40%),
+    radial-gradient(circle at 0% 100%, #e0e7ff 0, transparent 40%);
+  background-attachment: fixed;
+  color: #0f172a;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+input,
+button {
   font-family: inherit;
 }
 
-h2 {
-  color: #00796b;
-}
-
-button {
-  background-color: #00897b;
-  color: white;
+/* :where() keeps these defaults at zero specificity so class styles always win */
+:where(button) {
+  background-color: #0d9488;
+  color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 0.5rem 1rem;
   cursor: pointer;
-  transition: background-color 0.2s;
+  font-weight: 500;
+  transition: background-color 0.15s, transform 0.1s;
 }
 
-button:hover {
-  background-color: #00695c;
+:where(button:hover) {
+  background-color: #0f766e;
 }
 
-button:disabled {
-  background-color: #90a4ae;
+:where(button:disabled) {
+  background-color: #cbd5e1;
+  color: #64748b;
   cursor: not-allowed;
 }
 
-input[type="number"],
-input[type="text"] {
-  border: 1px solid #b2dfdb;
-  border-radius: 6px;
-  outline: none;
-}
-
-input[type="number"]:focus,
-input[type="text"]:focus {
-  border-color: #00897b;
-  box-shadow: 0 0 0 2px rgba(0, 137, 123, 0.2);
-}
-
-/* Keep the map area dark for better pin/circle visibility */
+/* Dark map popups */
 .leaflet-container {
-  background-color: #1a1d2e !important;
-  border-radius: 8px;
+  background-color: #0b1220 !important;
+  font-family: inherit;
 }
 
 .leaflet-popup-content-wrapper {
-  background-color: #2d2b55;
-  color: #f0f0f0;
+  background-color: #1e293b;
+  color: #f1f5f9;
+  border-radius: 10px;
 }
 
 .leaflet-popup-tip {
-  background-color: #2d2b55;
+  background-color: #1e293b;
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -7,22 +7,45 @@ export default function ReportUpload() {
   const [lon, setLon] = useState("");
   const [description, setDescription] = useState("");
   const [photo, setPhoto] = useState(null);
+  const [preview, setPreview] = useState("");
+  const [drag, setDrag] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  function useMyLocation() {
+  useEffect(() => {
+    if (!photo) {
+      setPreview("");
+      return;
+    }
+    const url = URL.createObjectURL(photo);
+    setPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [photo]);
+
+  function getLocation() {
     if (!navigator.geolocation) {
       setError("Geolocation is not supported by your browser.");
       return;
     }
     navigator.geolocation.getCurrentPosition(
       (pos) => {
+        setError("");
         setLat(pos.coords.latitude.toFixed(6));
         setLon(pos.coords.longitude.toFixed(6));
       },
       () => setError("Could not get your location. Enter it manually.")
     );
+  }
+
+  function pickFile(file) {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setError("Please choose an image file.");
+      return;
+    }
+    setError("");
+    setPhoto(file);
   }
 
   async function handleSubmit(e) {
@@ -57,93 +80,130 @@ export default function ReportUpload() {
       }
       setResult(data);
     } catch (err) {
-      setError(err.message);
+      setError(
+        /fetch|network/i.test(err.message)
+          ? "Can't reach the server. It may be waking up. Wait a minute and try again."
+          : err.message
+      );
     } finally {
       setLoading(false);
     }
   }
 
+  function reset() {
+    setPhoto(null);
+    setDescription("");
+    setResult(null);
+    setError("");
+  }
+
+  const label = result?.turbidity_label?.replace(/_/g, " ");
+
   return (
-    <div style={{ maxWidth: 480, margin: "0 auto", padding: "1rem" }}>
-      <h2>Report Water Quality</h2>
-      <p style={{ color: "#666", fontSize: "0.9rem" }}>
-        Upload a photo of water near you. We estimate how cloudy it looks — this is not a lab test.
-      </p>
-
-      <form onSubmit={handleSubmit}>
-        <button type="button" onClick={useMyLocation} style={{ marginBottom: "1rem" }}>
-          📍 Use my location
-        </button>
-
-        <div style={{ display: "flex", gap: "0.75rem", marginBottom: "0.75rem" }}>
-          <label style={{ flex: 1, fontSize: "0.9rem" }}>
-            Latitude
-            <input
-              type="number"
-              step="any"
-              value={lat}
-              onChange={(e) => setLat(e.target.value)}
-              style={{ display: "block", width: "100%", padding: "0.5rem", boxSizing: "border-box" }}
-            />
-          </label>
-          <label style={{ flex: 1, fontSize: "0.9rem" }}>
-            Longitude
-            <input
-              type="number"
-              step="any"
-              value={lon}
-              onChange={(e) => setLon(e.target.value)}
-              style={{ display: "block", width: "100%", padding: "0.5rem", boxSizing: "border-box" }}
-            />
-          </label>
-        </div>
-
-        <label style={{ display: "block", fontSize: "0.9rem", marginBottom: "0.75rem" }}>
-          Description (optional)
-          <input
-            type="text"
-            maxLength={300}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            style={{ display: "block", width: "100%", padding: "0.5rem", boxSizing: "border-box", marginTop: "0.25rem" }}
-          />
-        </label>
-
-        <label style={{ display: "block", fontSize: "0.9rem", marginBottom: "1rem" }}>
-          Photo
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setPhoto(e.target.files[0])}
-            style={{ display: "block", marginTop: "0.25rem" }}
-          />
-        </label>
-
-        <button type="submit" disabled={loading}>
-          {loading ? "Submitting..." : "Submit Report"}
-        </button>
-      </form>
-
-      {error && <p style={{ color: "#c0392b", marginTop: "1rem" }}>⚠ {error}</p>}
-
-      {result && (
-        <div
-          style={{
-            marginTop: "1rem",
-            padding: "1rem",
-            borderRadius: 8,
-            background: "#eafaf1",
-            border: "1px solid #27ae60",
-          }}
-        >
-          <strong>Report submitted ✅</strong>
-          <p style={{ margin: "0.5rem 0 0" }}>
-            Estimated: <strong>{result.turbidity_label.replace("_", " ")}</strong>
-            <br />
-            Status: {result.status} (not independently verified)
+    <div>
+      <div className="page-head">
+        <div>
+          <h1>Report a problem</h1>
+          <p className="page-sub">
+            Photograph water near you. We estimate how cloudy it looks. This is not a lab test.
           </p>
         </div>
-      )}
+      </div>
+
+      <div className="split">
+        <form className="card" onSubmit={handleSubmit}>
+          <h3 className="group-title first">1. Add a photo</h3>
+          <label
+            className={"dropzone" + (drag ? " drag" : "")}
+            onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
+            onDragLeave={() => setDrag(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setDrag(false);
+              pickFile(e.dataTransfer.files[0]);
+            }}
+          >
+            {preview ? (
+              <img src={preview} alt="Selected water" />
+            ) : (
+              <>
+                <span className="dz-icon">📷</span>
+                <strong>Drop a photo here or click to choose</strong>
+                <span className="muted small">JPG or PNG</span>
+              </>
+            )}
+            <input type="file" accept="image/*" onChange={(e) => pickFile(e.target.files[0])} />
+          </label>
+          {photo && <p className="muted small">{photo.name}</p>}
+
+          <h3 className="group-title">2. Where is it?</h3>
+          <button type="button" className="btn btn-secondary" onClick={getLocation}>
+            📍 Use my location
+          </button>
+          <div className="fields two">
+            <label className="field">
+              Latitude
+              <input type="number" step="any" className="plain" value={lat} onChange={(e) => setLat(e.target.value)} />
+            </label>
+            <label className="field">
+              Longitude
+              <input type="number" step="any" className="plain" value={lon} onChange={(e) => setLon(e.target.value)} />
+            </label>
+          </div>
+
+          <h3 className="group-title">3. Add a note (optional)</h3>
+          <label className="field">
+            <input
+              type="text"
+              className="plain"
+              maxLength={300}
+              placeholder="For example: brown water from the tap since morning"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </label>
+
+          <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
+            {loading ? "Submitting…" : "Submit report"}
+          </button>
+        </form>
+
+        <div className="result-col">
+          {error && <div className="alert">⚠ {error}</div>}
+
+          {result ? (
+            <div className="verdict" style={{ "--c": "#10b981" }}>
+              <div className="verdict-head">
+                <span className="verdict-icon">✅</span>
+                <div>
+                  <div className="verdict-label">Report submitted</div>
+                  <div className="muted small">Thank you for helping your community</div>
+                </div>
+              </div>
+              <p className="verdict-msg">
+                Estimated cloudiness: <strong>{label}</strong>
+                <br />
+                Status: {result.status} (not independently verified)
+              </p>
+              <button type="button" className="btn btn-secondary" onClick={reset}>
+                Report another
+              </button>
+            </div>
+          ) : (
+            <div className="card">
+              <h3 className="card-title">What happens next</h3>
+              <ol className="tips">
+                <li>The photo is analysed for cloudiness.</li>
+                <li>Your report appears on the live map.</li>
+                <li>Several unsafe reports close together form a hotspot zone.</li>
+              </ol>
+              <p className="muted small">
+                Tip: take the photo in daylight, with the water in a clear glass if possible.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
