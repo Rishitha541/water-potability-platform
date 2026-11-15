@@ -5,7 +5,7 @@ const SHOW_ACCURACY = true;
 const RESULTS = [
   { label: "Model result 1", value: 63.9 },
   { label: "Model result 2", value: 66.2 },
-  { label: "Baseline (always predict majority)", value: 61.0 },
+  { label: "Baseline (always shows not potable)", value: 61.0 },
 ];
 
 // Typical drinking-water guideline values (WHO / EPA style). Edit to match your backend rules.
